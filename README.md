@@ -66,5 +66,4 @@ docker-compose exec backend1 npm run seed
 - Password: `customer123`
 
 ## Architecture Diagram
-The architecture diagram `architecture.mmd` is located in the root folder. You can use the Mermaid Live Editor (https://mermaid.live/) to view it or render it using the mermaid CLI:
-`npx -p @mermaid-js/mermaid-cli mmdc -i architecture.mmd -o architecture.png`
+![SwiftDrop Architecture Diagram](./architecture.png)
