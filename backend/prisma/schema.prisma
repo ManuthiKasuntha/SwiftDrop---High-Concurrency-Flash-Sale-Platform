@@ -1,0 +1,58 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+model User {
+  id          String   @id @default(uuid())
+  email       String   @unique
+  displayName String
+  password    String
+  role        String   @default("CUSTOMER") // was enum Role
+  isActive    Boolean  @default(true)
+  orders      Order[]
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Event {
+  id          String      @id @default(uuid())
+  name        String
+  coverPhoto  String
+  goLiveTime  DateTime
+  status      String      @default("LOCKED") // was enum EventStatus
+  items       Item[]
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+}
+
+model Item {
+  id        String   @id @default(uuid())
+  name      String
+  price     Float
+  stock     Int
+  eventId   String
+  event     Event    @relation(fields: [eventId], references: [id])
+  orders    Order[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Order {
+  id        String      @id @default(uuid())
+  userId    String
+  user      User        @relation(fields: [userId], references: [id])
+  itemId    String
+  item      Item        @relation(fields: [itemId], references: [id])
+  quantity  Int         @default(1)
+  pricePaid Float
+  status    String      @default("CONFIRMED") // was enum OrderStatus
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
+
+  @@unique([userId, itemId]) // A user can purchase an item only once per event
+}
