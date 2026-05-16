@@ -65,5 +65,3 @@ docker-compose exec backend1 npm run seed
 - Email: `customer@swiftdrop.com`
 - Password: `customer123`
 
-## Architecture Diagram
-![SwiftDrop Architecture Diagram](./architecture.png)
