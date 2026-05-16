@@ -1,0 +1,38 @@
+graph TD
+    Client[Customer Browsers] -->|HTTP/HTTPS<br/>1000 Concurrent Requests| Nginx[Nginx Load Balancer<br/>& Rate Limiter]
+    
+    subaxis Traffic Management
+        Nginx
+    end
+    
+    Nginx -->|Proxy Pass| B1[Node.js Backend Instance 1]
+    Nginx -->|Proxy Pass| B2[Node.js Backend Instance 2]
+    
+    subaxis Application Layer
+        B1
+        B2
+    end
+    
+    B1 -->|Reserve Stock| Redis[(Redis InMemory DB)]
+    B2 -->|Reserve Stock| Redis
+    
+    subaxis Concurrency Control
+        Redis
+        note1[Lua Script Atomically<br/>Checks Stock > 0 &<br/>Decrements in Memory]
+        Redis -.- note1
+    end
+    
+    B1 -->|Confirm Order| PG[(PostgreSQL DB)]
+    B2 -->|Confirm Order| PG
+    
+    subaxis Persistent Storage
+        PG
+        note2[Transactions ensure<br/>Data Integrity]
+        PG -.- note2
+    end
+    
+    %% SSE Connections
+    Redis -.->|Broadcast Update| B1
+    Redis -.->|Broadcast Update| B2
+    B1 -.->|Server-Sent Events| Client
+    B2 -.->|Server-Sent Events| Client

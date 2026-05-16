@@ -1,0 +1,70 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:15-alpine
+    environment:
+      POSTGRES_USER: swiftdrop
+      POSTGRES_PASSWORD: swiftdrop_password
+      POSTGRES_DB: swiftdrop_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+
+  backend1:
+    build: 
+      context: ./backend
+      dockerfile: Dockerfile
+    environment:
+      - PORT=3001
+      - DATABASE_URL=postgresql://swiftdrop:swiftdrop_password@postgres:5432/swiftdrop_db?schema=public
+      - REDIS_URL=redis://redis:6379
+      - JWT_SECRET=super_secret_jwt_key_123
+    depends_on:
+      - postgres
+      - redis
+    ports:
+      - "3001:3001"
+
+  backend2:
+    build: 
+      context: ./backend
+      dockerfile: Dockerfile
+    environment:
+      - PORT=3002
+      - DATABASE_URL=postgresql://swiftdrop:swiftdrop_password@postgres:5432/swiftdrop_db?schema=public
+      - REDIS_URL=redis://redis:6379
+      - JWT_SECRET=super_secret_jwt_key_123
+    depends_on:
+      - postgres
+      - redis
+    ports:
+      - "3002:3002"
+
+  nginx:
+    image: nginx:alpine
+    ports:
+      - "8080:80"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+    depends_on:
+      - backend1
+      - backend2
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    environment:
+      - VITE_API_URL=http://localhost:8080
+
+volumes:
+  pgdata:
